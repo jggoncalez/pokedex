@@ -13,6 +13,8 @@ use App\Http\Controllers\PokemonController;
 
 
 Route::get('/pokedex', [PokemonController::class, 'index']);
+Route::post('/pokedex/team/add', [PokemonController::class, 'addToTeam'])->name('team.add');
+Route::post('/pokedex/team/remove', [PokemonController::class, 'removeFromTeam'])->name('team.remove');
 
 // Exemplo 1: GET - Buscando dados de uma API Externa (PokeAPI)
 
