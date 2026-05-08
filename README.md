@@ -7,6 +7,22 @@ Laravel 13 · PokéAPI · MySQL · Pokémons gerados por Nano Banana 2
 
 ---
 
+## Sumário
+
+- [Sobre o Projeto](#sobre-o-projeto)
+- [Funcionalidades](#funcionalidades)
+- [Stack](#stack)
+- [Estrutura do Projeto](#estrutura-do-projeto)
+- [Controllers](#controllers)
+- [Models](#models)
+- [Banco de Dados](#banco-de-dados)
+- [Rotas](#rotas)
+- [Setup Local](#setup-local)
+- [Custom Pokémons](#custom-pokémons)
+- [Comparativo](#comparativo)
+
+---
+
 ## Sobre o Projeto
 
 Pokédex completa com duas seções integradas: a **Pokédex oficial** (dados da PokéAPI) e o **Custom DEX** (Pokémons originais criados com IA). Inclui sistema de quiz, gerenciamento de time, cry com visualizador de onda e upload de sprites.
@@ -37,6 +53,169 @@ Pokédex completa com duas seções integradas: a **Pokédex oficial** (dados da
 - **API externa:** [PokéAPI v2](https://pokeapi.co/)
 - **Áudio:** Web Audio API (cry procedural no Custom DEX; áudio oficial na Pokédex)
 - **Sprites IA:** Gemini Imagen (Google)
+
+---
+
+## Estrutura do Projeto
+
+```
+pokedex/
+├── app/
+│   ├── Http/
+│   │   └── Controllers/
+│   │       ├── PokemonController.php
+│   │       └── CustomPokemonController.php
+│   └── Models/
+│       ├── User.php
+│       └── CustomPokemon.php
+├── database/
+│   ├── migrations/
+│   └── seeders/
+│       └── CustomPokemonSeeder.php
+├── public/
+│   └── sprites/
+├── resources/
+│   └── views/
+├── routes/
+│   └── web.php
+└── storage/
+    └── app/public/   ← sprites enviados via upload
+```
+
+---
+
+## Controllers
+
+### `PokemonController`
+
+Gerencia a Pokédex oficial (PokéAPI) e o time.
+
+| Método | Descrição |
+|--------|-----------|
+| `index()` | Lista Pokémons com filtro por geração e busca por nome/número |
+| `quiz()` | Inicia o quiz de silhueta (PokéAPI) |
+| `guess()` | Processa a resposta do quiz e atualiza streak/precisão |
+| `addToTeam()` | Adiciona um Pokémon ao time (sessão, máx. 6) |
+| `removeFromTeam()` | Remove um Pokémon do time |
+| `parseEvolutionChain()` | Helper privado para montar a cadeia evolutiva |
+
+### `CustomPokemonController`
+
+CRUD completo para os Pokémons customizados.
+
+| Método | Descrição |
+|--------|-----------|
+| `index()` | Lista todos os Pokémons custom ordenados por `dex_number` |
+| `create()` | Exibe o formulário de criação |
+| `store()` | Valida e persiste um novo Pokémon (com upload de sprite) |
+| `show()` | Exibe os detalhes de um Pokémon custom |
+| `edit()` | Exibe o formulário de edição |
+| `update()` | Valida e atualiza os dados (substitui sprite se enviada) |
+| `destroy()` | Remove o registro e o arquivo de sprite do storage |
+| `quiz()` | Inicia o quiz de silhueta do Custom DEX |
+| `guess()` | Processa a resposta do quiz custom |
+
+---
+
+## Models
+
+### `CustomPokemon`
+
+Tabela: `custom_pokemons`
+
+| Campo | Tipo PHP | Descrição |
+|-------|----------|-----------|
+| `dex_number` | `int` | Número único na Pokédex |
+| `name` | `string` | Nome do Pokémon |
+| `type_primary` | `string` | Tipo principal |
+| `type_secondary` | `string\|null` | Tipo secundário |
+| `base_animal` | `string` | Animal inspirador |
+| `inspiration` | `string` | Tema / linguagem de programação |
+| `hp` | `int` | Stat HP (1–255) |
+| `attack` | `int` | Stat Ataque (1–255) |
+| `defense` | `int` | Stat Defesa (1–255) |
+| `speed` | `int` | Stat Velocidade (1–255) |
+| `sprite_path` | `string\|null` | Caminho relativo ao storage |
+| `attacks` | `array` (cast JSON) | Até 4 ataques customizados |
+
+### `User`
+
+Tabela: `users` — modelo padrão do Laravel, usado para autenticação futura.
+
+| Campo | Tipo |
+|-------|------|
+| `name` | `string` |
+| `email` | `string` (único) |
+| `password` | `hashed` |
+
+---
+
+## Banco de Dados
+
+### Migrations
+
+| Arquivo | Tabelas criadas |
+|---------|-----------------|
+| `0001_01_01_000000_create_users_table` | `users`, `password_reset_tokens`, `sessions` |
+| `0001_01_01_000001_create_cache_table` | `cache`, `cache_locks` |
+| `0001_01_01_000002_create_jobs_table` | `jobs`, `job_batches`, `failed_jobs` |
+| `2026_05_07_224323_create_custom_pokemons_table` | `custom_pokemons` |
+| `2026_05_07_231913_add_attacks_to_custom_pokemons_table` | coluna `attacks` (JSON) em `custom_pokemons` |
+
+### Estrutura — `custom_pokemons`
+
+| Coluna | Tipo | Descrição |
+|--------|------|-----------|
+| `id` | BIGINT PK auto | Chave primária |
+| `dex_number` | INT único | Número na Pokédex |
+| `name` | VARCHAR | Nome do Pokémon |
+| `type_primary` | VARCHAR | Tipo principal |
+| `type_secondary` | VARCHAR null | Tipo secundário |
+| `base_animal` | VARCHAR | Animal inspirador |
+| `inspiration` | TEXT | Tema / linguagem |
+| `hp` | INT (default 50) | Stat HP (1–255) |
+| `attack` | INT (default 50) | Stat Ataque (1–255) |
+| `defense` | INT (default 50) | Stat Defesa (1–255) |
+| `speed` | INT (default 50) | Stat Velocidade (1–255) |
+| `sprite_path` | VARCHAR null | Caminho da imagem (storage) |
+| `attacks` | JSON null | Array de até 4 ataques |
+| `created_at` | TIMESTAMP | — |
+| `updated_at` | TIMESTAMP | — |
+
+### Estrutura — `users`
+
+| Coluna | Tipo | Descrição |
+|--------|------|-----------|
+| `id` | BIGINT PK auto | Chave primária |
+| `name` | VARCHAR | Nome do usuário |
+| `email` | VARCHAR único | E-mail |
+| `email_verified_at` | TIMESTAMP null | Verificação de e-mail |
+| `password` | VARCHAR | Senha (hashed) |
+| `remember_token` | VARCHAR null | Token "lembrar-me" |
+| `created_at` | TIMESTAMP | — |
+| `updated_at` | TIMESTAMP | — |
+
+---
+
+## Rotas
+
+| Método | URL | Controller#Método | Nome |
+|--------|-----|-------------------|------|
+| GET | `/` | `PokemonController@index` | `pokedex` |
+| GET | `/pokedex` | `PokemonController@index` | — |
+| GET | `/quiz` | `PokemonController@quiz` | `quiz` |
+| POST | `/quiz` | `PokemonController@guess` | `quiz.guess` |
+| POST | `/pokedex/team/add` | `PokemonController@addToTeam` | `team.add` |
+| POST | `/pokedex/team/remove` | `PokemonController@removeFromTeam` | `team.remove` |
+| GET | `/custom-pokemons` | `CustomPokemonController@index` | `custom-pokemons.index` |
+| GET | `/custom-pokemons/criar` | `CustomPokemonController@create` | `custom-pokemons.create` |
+| POST | `/custom-pokemons` | `CustomPokemonController@store` | `custom-pokemons.store` |
+| GET | `/custom-pokemons/quiz` | `CustomPokemonController@quiz` | `custom-pokemons.quiz` |
+| POST | `/custom-pokemons/quiz` | `CustomPokemonController@guess` | `custom-pokemons.guess` |
+| GET | `/custom-pokemons/{id}` | `CustomPokemonController@show` | `custom-pokemons.show` |
+| GET | `/custom-pokemons/{id}/editar` | `CustomPokemonController@edit` | `custom-pokemons.edit` |
+| PUT | `/custom-pokemons/{id}` | `CustomPokemonController@update` | `custom-pokemons.update` |
+| DELETE | `/custom-pokemons/{id}` | `CustomPokemonController@destroy` | `custom-pokemons.destroy` |
 
 ---
 
@@ -85,46 +264,6 @@ php artisan serve
 ```
 
 Acesse: `http://localhost:8000`
-
----
-
-## Rotas
-
-| Método | URL | Descrição |
-|--------|-----|-----------|
-| GET | `/` | Pokédex principal |
-| GET | `/quiz` | Quiz de silhueta (PokéAPI) |
-| POST | `/quiz` | Enviar resposta do quiz |
-| GET | `/custom-pokemons` | Listagem do Custom DEX |
-| GET | `/custom-pokemons/criar` | Formulário de criação |
-| POST | `/custom-pokemons` | Salvar novo Pokémon |
-| GET | `/custom-pokemons/quiz` | Quiz do Custom DEX |
-| POST | `/custom-pokemons/quiz` | Enviar resposta do quiz custom |
-| GET | `/custom-pokemons/{id}` | Detalhes de um Pokémon custom |
-| POST | `/team/add` | Adicionar ao time |
-| POST | `/team/remove` | Remover do time |
-
----
-
-## Estrutura do Banco — `custom_pokemons`
-
-| Coluna | Tipo | Descrição |
-|--------|------|-----------|
-| `id` | BIGINT PK | Chave primária |
-| `dex_number` | INT único | Número na Pokédex |
-| `name` | VARCHAR | Nome do Pokémon |
-| `type_primary` | VARCHAR | Tipo principal |
-| `type_secondary` | VARCHAR null | Tipo secundário |
-| `base_animal` | VARCHAR | Animal inspirador |
-| `inspiration` | TEXT | Tema / linguagem |
-| `hp` | INT | Stat HP (1–255) |
-| `attack` | INT | Stat Ataque (1–255) |
-| `defense` | INT | Stat Defesa (1–255) |
-| `speed` | INT | Stat Velocidade (1–255) |
-| `sprite_path` | VARCHAR null | Caminho da imagem (storage) |
-| `attacks` | JSON null | Array de até 4 ataques |
-| `created_at` | TIMESTAMP | — |
-| `updated_at` | TIMESTAMP | — |
 
 ---
 
