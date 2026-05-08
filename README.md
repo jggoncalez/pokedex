@@ -1,7 +1,9 @@
 # POKÉDEX CUSTOM EDITION
 
+![Captura de tela](.github/screenshot.png)
+
 **SENAI Limeira · Técnico em Desenvolvimento de Sistemas**
-Laravel 13 · PokéAPI · MySQL · Pokémons gerados por Gemini Imagen
+Laravel 13 · PokéAPI · MySQL · Pokémons gerados por Nano Banana 2
 
 ---
 
