@@ -26,7 +26,8 @@ Route::get('/custom-pokemons/criar',  [CustomPokemonController::class, 'create']
 Route::post('/custom-pokemons',       [CustomPokemonController::class, 'store'])->name('custom-pokemons.store');
 Route::get('/custom-pokemons/quiz',   [CustomPokemonController::class, 'quiz'])->name('custom-pokemons.quiz');
 Route::post('/custom-pokemons/quiz',  [CustomPokemonController::class, 'guess'])->name('custom-pokemons.guess');
-Route::get('/custom-pokemons/{id}',   [CustomPokemonController::class, 'show'])->name('custom-pokemons.show');
+Route::get('/custom-pokemons/{id}',    [CustomPokemonController::class, 'show'])->name('custom-pokemons.show');
+Route::delete('/custom-pokemons/{id}', [CustomPokemonController::class, 'destroy'])->name('custom-pokemons.destroy');
 Route::post('/pokedex/team/add', [PokemonController::class, 'addToTeam'])->name('team.add');
 Route::post('/pokedex/team/remove', [PokemonController::class, 'removeFromTeam'])->name('team.remove');
 

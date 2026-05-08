@@ -100,54 +100,62 @@
         {{-- Grid --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             @foreach($pokemons as $pokemon)
-                <a href="{{ route('custom-pokemons.show', $pokemon->id) }}" class="pixel-card">
-                    <div class="p-5">
-                        {{-- Sprite --}}
-                        <div class="flex justify-center mb-4">
-                            <img src="{{ $pokemon->sprite_path ? asset($pokemon->sprite_path) : 'https://placehold.co/96x96/0a0a1a/9bbc0f?text=' . urlencode($pokemon->name[0]) }}"
-                                 alt="{{ $pokemon->name }}"
-                                 class="w-24 h-24 object-contain"
-                                 style="image-rendering: pixelated;"
-                                 onerror="this.src='https://placehold.co/96x96/0a0a1a/9bbc0f?text=?'">
-                        </div>
+                <div class="pixel-card" style="text-decoration: none; display: block;">
+                    <a href="{{ route('custom-pokemons.show', $pokemon->id) }}" style="text-decoration: none; display: block;">
+                        <div class="p-5">
+                            {{-- Sprite --}}
+                            <div class="flex justify-center mb-4">
+                                <img src="{{ $pokemon->sprite_path ? asset($pokemon->sprite_path) : 'https://placehold.co/96x96/0a0a1a/9bbc0f?text=' . urlencode($pokemon->name[0]) }}"
+                                     alt="{{ $pokemon->name }}"
+                                     class="w-24 h-24 object-contain"
+                                     style="image-rendering: pixelated;"
+                                     onerror="this.src='https://placehold.co/96x96/0a0a1a/9bbc0f?text=?'">
+                            </div>
 
-                        {{-- Number + Name --}}
-                        <div class="text-center mb-3">
-                            <p class="text-gray-600 mb-1" style="font-size: 6px;">#{{ str_pad($pokemon->dex_number, 4, '0', STR_PAD_LEFT) }}</p>
-                            <h2 class="text-green-400" style="font-size: 10px;">{{ strtoupper($pokemon->name) }}</h2>
-                        </div>
+                            {{-- Number + Name --}}
+                            <div class="text-center mb-3">
+                                <p class="text-gray-600 mb-1" style="font-size: 6px;">#{{ str_pad($pokemon->dex_number, 4, '0', STR_PAD_LEFT) }}</p>
+                                <h2 class="text-green-400" style="font-size: 10px;">{{ strtoupper($pokemon->name) }}</h2>
+                            </div>
 
-                        {{-- Types --}}
-                        <div class="flex gap-2 justify-center mb-4 flex-wrap">
-                            <span class="type-badge type-{{ $pokemon->type_primary }} px-2 py-1 rounded text-white font-bold">
-                                {{ strtoupper($pokemon->type_primary) }}
-                            </span>
-                            @if($pokemon->type_secondary)
-                                <span class="type-badge type-{{ $pokemon->type_secondary }} px-2 py-1 rounded font-bold">
-                                    {{ strtoupper($pokemon->type_secondary) }}
+                            {{-- Types --}}
+                            <div class="flex gap-2 justify-center mb-4 flex-wrap">
+                                <span class="type-badge type-{{ $pokemon->type_primary }} px-2 py-1 rounded text-white font-bold">
+                                    {{ strtoupper($pokemon->type_primary) }}
                                 </span>
-                            @endif
-                        </div>
+                                @if($pokemon->type_secondary)
+                                    <span class="type-badge type-{{ $pokemon->type_secondary }} px-2 py-1 rounded font-bold">
+                                        {{ strtoupper($pokemon->type_secondary) }}
+                                    </span>
+                                @endif
+                            </div>
 
-                        {{-- Mini stats --}}
-                        <div class="space-y-2">
-                            @foreach(['hp' => 'HP', 'attack' => 'ATK', 'defense' => 'DEF', 'speed' => 'VEL'] as $key => $label)
-                                <div class="flex items-center gap-2">
-                                    <span class="text-gray-600 flex-shrink-0" style="font-size: 5px; width: 22px; text-align: right;">{{ $label }}</span>
-                                    <div class="flex-1 stat-bar-bg" style="height: 6px;">
-                                        <div class="stat-bar-fill" style="width: {{ min(100, ($pokemon->$key / 255) * 100) }}%;"></div>
+                            {{-- Mini stats --}}
+                            <div class="space-y-2">
+                                @foreach(['hp' => 'HP', 'attack' => 'ATK', 'defense' => 'DEF', 'speed' => 'VEL'] as $key => $label)
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-gray-600 flex-shrink-0" style="font-size: 5px; width: 22px; text-align: right;">{{ $label }}</span>
+                                        <div class="flex-1 stat-bar-bg" style="height: 6px;">
+                                            <div class="stat-bar-fill" style="width: {{ min(100, ($pokemon->$key / 255) * 100) }}%;"></div>
+                                        </div>
+                                        <span class="text-gray-500 flex-shrink-0" style="font-size: 5px; width: 20px; text-align: right;">{{ $pokemon->$key }}</span>
                                     </div>
-                                    <span class="text-gray-500 flex-shrink-0" style="font-size: 5px; width: 20px; text-align: right;">{{ $pokemon->$key }}</span>
-                                </div>
-                            @endforeach
+                                @endforeach
+                            </div>
                         </div>
-                    </div>
+                    </a>
 
                     {{-- Card footer --}}
-                    <div class="px-5 py-2 text-right" style="border-top: 1px solid #1e2e4a;">
+                    <div class="px-5 py-2 flex items-center justify-between" style="border-top: 1px solid #1e2e4a;">
                         <span style="font-size: 5px; color: #4a5568;">VER DETALHES →</span>
+                        <form method="POST" action="{{ route('custom-pokemons.destroy', $pokemon->id) }}"
+                              onsubmit="return confirm('Deletar {{ strtoupper($pokemon->name) }}?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="action-btn px-2 py-1 rounded" style="font-size: 5px;">✕ DEL</button>
+                        </form>
                     </div>
-                </a>
+                </div>
             @endforeach
         </div>
     @endif

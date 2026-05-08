@@ -89,6 +89,21 @@ class CustomPokemonController extends Controller
             ->with('success', 'Pokémon criado com sucesso!');
     }
 
+    public function destroy($id)
+    {
+        $pokemon = CustomPokemon::findOrFail($id);
+        $name    = strtoupper($pokemon->name);
+
+        if ($pokemon->sprite_path && file_exists(public_path($pokemon->sprite_path))) {
+            unlink(public_path($pokemon->sprite_path));
+        }
+
+        $pokemon->delete();
+
+        return redirect()->route('custom-pokemons.index')
+            ->with('success', "{$name} foi deletado com sucesso!");
+    }
+
     public function quiz()
     {
         $pokemon = CustomPokemon::inRandomOrder()->first();
