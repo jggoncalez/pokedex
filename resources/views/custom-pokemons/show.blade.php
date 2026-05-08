@@ -169,9 +169,16 @@
                     <a href="{{ route('custom-pokemons.create') }}" class="action-btn blue px-4 py-2 rounded text-xs">+ CRIAR</a>
                 </div>
 
+                {{-- Edit --}}
+                <a href="{{ route('custom-pokemons.edit', $pokemon->id) }}"
+                   class="action-btn blue mt-3 px-4 py-2 rounded text-xs w-full text-center"
+                   style="display: block;">
+                    ✎ EDITAR POKÉMON
+                </a>
+
                 {{-- Delete --}}
                 <form method="POST" action="{{ route('custom-pokemons.destroy', $pokemon->id) }}"
-                      class="mt-3 text-center"
+                      class="mt-2 text-center"
                       onsubmit="return confirm('Deletar {{ strtoupper($pokemon->name) }}? Esta ação não pode ser desfeita.')">
                     @csrf
                     @method('DELETE')

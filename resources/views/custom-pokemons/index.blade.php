@@ -148,12 +148,19 @@
                     {{-- Card footer --}}
                     <div class="px-5 py-2 flex items-center justify-between" style="border-top: 1px solid #1e2e4a;">
                         <span style="font-size: 5px; color: #4a5568;">VER DETALHES →</span>
-                        <form method="POST" action="{{ route('custom-pokemons.destroy', $pokemon->id) }}"
-                              onsubmit="return confirm('Deletar {{ strtoupper($pokemon->name) }}?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="action-btn px-2 py-1 rounded" style="font-size: 5px;">✕ DEL</button>
-                        </form>
+                        <div class="flex items-center gap-2">
+                            <a href="{{ route('custom-pokemons.edit', $pokemon->id) }}"
+                               class="action-btn blue rounded"
+                               style="font-size: 5px; padding: 5px 8px; line-height: 1;">✎ EDIT</a>
+                            <form method="POST" action="{{ route('custom-pokemons.destroy', $pokemon->id) }}"
+                                  style="display: flex;"
+                                  onsubmit="return confirm('Deletar {{ strtoupper($pokemon->name) }}?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="action-btn rounded"
+                                        style="font-size: 5px; padding: 5px 8px; line-height: 1;">✕ DEL</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             @endforeach

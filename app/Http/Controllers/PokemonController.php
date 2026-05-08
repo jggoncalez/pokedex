@@ -22,7 +22,8 @@ class PokemonController extends Controller
         $busca = $request->input('pokemon') ?? rand($min, $max);
         $nomeOuId = strtolower(trim((string) $busca));
 
-        $response = Http::get("https://pokeapi.co/api/v2/pokemon/{$nomeOuId}");
+        $response = Http::withoutVerifying()
+            ->get("https://pokeapi.co/api/v2/pokemon/{$nomeOuId}");
 
         if (! $response->successful()) {
             return back()->with('erro', 'Pokémon não encontrado!');
@@ -30,7 +31,7 @@ class PokemonController extends Controller
 
         $pokemon = $response->json();
 
-        $speciesResponse = Http::get($pokemon['species']['url']);
+        $speciesResponse = Http::withoutVerifying()->get($pokemon['species']['url']);
         $species = $speciesResponse->successful() ? $speciesResponse->json() : null;
 
         $flavorText = null;
@@ -45,7 +46,7 @@ class PokemonController extends Controller
             }
 
             if (isset($species['evolution_chain']['url'])) {
-                $evoResponse = Http::get($species['evolution_chain']['url']);
+                $evoResponse = Http::withoutVerifying()->get($species['evolution_chain']['url']);
                 if ($evoResponse->successful()) {
                     $evolutionChain = $this->parseEvolutionChain(
                         $evoResponse->json()['chain']
@@ -69,7 +70,7 @@ class PokemonController extends Controller
         }
 
         $id = rand($min, $max);
-        $response = Http::get("https://pokeapi.co/api/v2/pokemon/{$id}");
+        $response = Http::withoutVerifying()->get("https://pokeapi.co/api/v2/pokemon/{$id}");
 
         if (! $response->successful()) {
             return redirect()->route('quiz');
@@ -90,7 +91,7 @@ class PokemonController extends Controller
             return redirect()->route('quiz');
         }
 
-        $response = Http::get("https://pokeapi.co/api/v2/pokemon/{$pokemonId}");
+        $response = Http::withoutVerifying()->get("https://pokeapi.co/api/v2/pokemon/{$pokemonId}");
         if (! $response->successful()) {
             return redirect()->route('quiz');
         }
