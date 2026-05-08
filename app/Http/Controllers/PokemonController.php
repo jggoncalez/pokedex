@@ -57,6 +57,76 @@ class PokemonController extends Controller
         return view('pokemon', compact('pokemon', 'flavorText', 'evolutionChain', 'gen'));
     }
 
+    public function quiz(Request $request)
+    {
+        $gen = (int) $request->input('gen', 0);
+
+        if ($gen > 0 && array_key_exists($gen, $this->generations)) {
+            [$min, $max] = $this->generations[$gen];
+        } else {
+            $gen = 0;
+            [$min, $max] = [1, 1025];
+        }
+
+        $id = rand($min, $max);
+        $response = Http::get("https://pokeapi.co/api/v2/pokemon/{$id}");
+
+        if (! $response->successful()) {
+            return redirect()->route('quiz');
+        }
+
+        $pokemon = $response->json();
+        session(['quiz_poke_id' => $pokemon['id'], 'quiz_gen' => $gen]);
+
+        return view('quiz', $this->quizViewData($pokemon, $gen));
+    }
+
+    public function guess(Request $request)
+    {
+        $pokemonId = session('quiz_poke_id');
+        $quizGen   = session('quiz_gen', 0);
+
+        if (! $pokemonId) {
+            return redirect()->route('quiz');
+        }
+
+        $response = Http::get("https://pokeapi.co/api/v2/pokemon/{$pokemonId}");
+        if (! $response->successful()) {
+            return redirect()->route('quiz');
+        }
+
+        $pokemon   = $response->json();
+        $normalize = fn (string $s) => strtolower(preg_replace('/[\s\-]/', '', trim($s)));
+        $guess     = trim($request->input('guess', ''));
+        $acertou   = $guess !== '' && $normalize($guess) === $normalize($pokemon['name']);
+
+        $streak  = session('quiz_streak', 0);
+        $best    = session('quiz_best', 0);
+        $total   = session('quiz_total', 0) + 1;
+        $correct = session('quiz_correct', 0) + ($acertou ? 1 : 0);
+        $streak  = $acertou ? $streak + 1 : 0;
+        $best    = max($best, $streak);
+
+        session(['quiz_streak' => $streak, 'quiz_best' => $best, 'quiz_total' => $total, 'quiz_correct' => $correct]);
+        session()->forget('quiz_poke_id');
+
+        return view('quiz', array_merge($this->quizViewData($pokemon, $quizGen), compact('acertou')));
+    }
+
+    private function quizViewData(array $pokemon, int $quizGen): array
+    {
+        return [
+            'pokemon' => $pokemon,
+            'quizGen' => $quizGen,
+            'score'   => [
+                'streak'  => session('quiz_streak', 0),
+                'best'    => session('quiz_best', 0),
+                'total'   => session('quiz_total', 0),
+                'correct' => session('quiz_correct', 0),
+            ],
+        ];
+    }
+
     public function addToTeam(Request $request)
     {
         $team = session('team', []);

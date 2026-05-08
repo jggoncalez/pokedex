@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\PokemonController;
+use App\Http\Controllers\CustomPokemonController;
 
 /*
 |--------------------------------------------------------------------------
@@ -12,7 +13,20 @@ use App\Http\Controllers\PokemonController;
 */
 
 
+Route::get('/', [PokemonController::class, 'index'])->name('pokedex');
 Route::get('/pokedex', [PokemonController::class, 'index']);
+
+// Quiz Pokédex (PokeAPI)
+Route::get('/quiz',  [PokemonController::class, 'quiz'])->name('quiz');
+Route::post('/quiz', [PokemonController::class, 'guess'])->name('quiz.guess');
+
+// Custom Pokémons
+Route::get('/custom-pokemons',        [CustomPokemonController::class, 'index'])->name('custom-pokemons.index');
+Route::get('/custom-pokemons/criar',  [CustomPokemonController::class, 'create'])->name('custom-pokemons.create');
+Route::post('/custom-pokemons',       [CustomPokemonController::class, 'store'])->name('custom-pokemons.store');
+Route::get('/custom-pokemons/quiz',   [CustomPokemonController::class, 'quiz'])->name('custom-pokemons.quiz');
+Route::post('/custom-pokemons/quiz',  [CustomPokemonController::class, 'guess'])->name('custom-pokemons.guess');
+Route::get('/custom-pokemons/{id}',   [CustomPokemonController::class, 'show'])->name('custom-pokemons.show');
 Route::post('/pokedex/team/add', [PokemonController::class, 'addToTeam'])->name('team.add');
 Route::post('/pokedex/team/remove', [PokemonController::class, 'removeFromTeam'])->name('team.remove');
 
